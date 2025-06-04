@@ -3,7 +3,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import base64
 import os
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, Column, Integer, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 
@@ -18,14 +18,14 @@ class CongestionData(Base):
     __tablename__ = "congestion"
     id = Column(Integer, primary_key=True, index=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
-    level = Column(String)
+    people_count = Column(Integer)  # 修正: 数字として保存
     location_id = Column(Integer)
 
 Base.metadata.create_all(bind=engine)
 
 # Gemini API設定
 load_dotenv()
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")  # ハイフン (-) ではなくアンダースコア (_) を推奨
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-2.0-flash')
 
@@ -43,31 +43,41 @@ async def upload_photo(request: Request, file: UploadFile = File(...)):
     image_data = await file.read()
     encoded_image = base64.b64encode(image_data).decode("utf-8")
 
-    # IPからlocation_idを取得
+    # クライアントIPからlocation_idを決定
     client_host = request.client.host
     location_id = get_location_id_from_ip(client_host)
 
-    # Geminiへ画像＋プロンプト送信
+    # Geminiへのプロンプト＋画像送信（画像とテキストは分離）
     try:
         response = model.generate_content([
-            "この画像の混雑状況を「大」「中」「小」で評価してください。",
-            {
-                "mime_type": "image/jpeg",
-                "data": encoded_image
-            }
-        ])
-        level = response.text.strip()
+"以下の画像を見て、行列に並んでいる人の人数を5の倍数で答えてください。",
+    {
+        "mime_type": "image/jpeg",
+        "data": encoded_image
+    },
+"""
+以下の注意事項に従ってください：
+・行列に並んでいる人のみを数える  
+・障害物があっても予測で見えない人数も含める  
+・端が見えない場合は無視して見えている部分だけ評価する  
+・出力は整数のみ（例：\"15\"）で、5の倍数に丸めて出力
+"""
+])
+        people_count_str = response.text.strip()
+        if not people_count_str.isdigit():
+            raise ValueError("AIの出力が数値ではありません: " + people_count_str)
+        people_count = int(people_count_str)
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
     # データベースに保存
     session = SessionLocal()
-    data = CongestionData(level=level, location_id=location_id)
+    data = CongestionData(people_count=people_count, location_id=location_id)
     session.add(data)
     session.commit()
     session.close()
 
-    return {"status": "success", "level": level, "location_id": location_id}
+    return {"status": "success", "people_count": people_count, "location_id": location_id}
 
 @app.get("/congestion/")
 def get_latest_congestion():
@@ -77,7 +87,7 @@ def get_latest_congestion():
     if latest:
         return {
             "timestamp": latest.timestamp,
-            "level": latest.level,
+            "people_count": latest.people_count,
             "location_id": latest.location_id
         }
     else:
