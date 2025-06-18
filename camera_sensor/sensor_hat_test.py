@@ -1,19 +1,9 @@
+import os
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+
 from sense_hat import SenseHat
-sense = SenseHat()
 
-R = [255, 0, 0]  # 赤
-O = [0, 0, 0]    # 黒（消灯）
+sense = SenseHat(use_led_matrix=False)  # ← これが効く！
 
-# "H" のような文字のパターン
-pixels = [
-    R, O, R, O, R, O, R, O,
-    R, O, R, O, R, O, R, O,
-    R, R, R, O, R, R, R, O,
-    R, O, R, O, R, O, R, O,
-    R, O, R, O, R, O, R, O,
-    R, O, R, O, R, O, R, O,
-    R, O, R, O, R, O, R, O,
-    R, O, R, O, R, O, R, O
-]
-
-sense.set_pixels(pixels)
+temp = sense.get_temperature()
+print(f"Temperature: {temp:.2f}°C")
