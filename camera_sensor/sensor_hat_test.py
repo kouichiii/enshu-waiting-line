@@ -1,13 +1,47 @@
-import smbus2
-import bme280
+#!/usr/bin/env python3
+# Note:
+# DS18B20's data pin must be connected to GPIO4 (pin 7).
+# Reads temperature from sensor and prints to stdout
 
-port = 1
-address = 0x76  # または 0x77（i2cdetect -y 1 で確認）
-bus = smbus2.SMBus(port)
+import os
+import time
 
-calibration_params = bme280.load_calibration_params(bus, address)
-data = bme280.sample(bus, address, calibration_params)
+def readSensor(sensor_id):
+    try:
+        with open(f"/sys/bus/w1/devices/{sensor_id}/w1_slave", "r") as tfile:
+            lines = tfile.readlines()
+            if lines[0].strip()[-3:] != "YES":
+                print(f"Sensor {sensor_id} not ready")
+                return
+            temperature_data = lines[1].split("t=")
+            if len(temperature_data) == 2:
+                temperature = float(temperature_data[1]) / 1000
+                print(f"Sensor: {sensor_id} - Current temperature : {temperature:.3f} °C")
+    except FileNotFoundError:
+        print(f"Sensor {sensor_id} not found")
 
-print(f"🌡 温度: {data.temperature:.2f} °C")
-print(f"💧 湿度: {data.humidity:.2f} %")
-print(f"📈 気圧: {data.pressure:.2f} hPa")
+def readSensors():
+    sensor_found = False
+    base_dir = "/sys/bus/w1/devices/"
+    for device in os.listdir(base_dir):
+        if device.startswith("28-"):
+            readSensor(device)
+            sensor_found = True
+    if not sensor_found:
+        print("No sensor found! Check connection.")
+
+def loop():
+    while True:
+        readSensors()
+        time.sleep(1)
+
+def destroy():
+    pass  # Nothing to cleanup
+
+# Main
+if __name__ == "__main__":
+    try:
+        loop()
+    except KeyboardInterrupt:
+        destroy()
+        print("\nProgram terminated by user.")
