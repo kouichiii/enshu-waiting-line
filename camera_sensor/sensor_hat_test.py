@@ -1,16 +1,13 @@
-from sense_hat import SenseHat
-import time
+import smbus2
+import bme280
 
-sense = SenseHat()
+port = 1
+address = 0x76  # または 0x77（i2cdetect -y 1 で確認）
+bus = smbus2.SMBus(port)
 
-while True:
-    temp = sense.get_temperature()
-    humidity = sense.get_humidity()
-    pressure = sense.get_pressure()
-    
-    print(f"🌡 温度: {temp:.1f} °C")
-    print(f"💧 湿度: {humidity:.1f} %")
-    print(f"📈 気圧: {pressure:.1f} hPa")
-    print("-" * 30)
+calibration_params = bme280.load_calibration_params(bus, address)
+data = bme280.sample(bus, address, calibration_params)
 
-    time.sleep(2)
+print(f"🌡 温度: {data.temperature:.2f} °C")
+print(f"💧 湿度: {data.humidity:.2f} %")
+print(f"📈 気圧: {data.pressure:.2f} hPa")
