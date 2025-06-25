@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バス停混雑状況</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>バス停混雑状況</h1>
+        
+        <div class="info-bar">
+            <p id="last-updated">最終更新: --</p>
+            <button id="refresh-btn" class="refresh-btn">更新</button>
+        </div>
+        
+        <div id="loading" class="loading">
+            データを取得中...
+        </div>
+        
+        <div id="error-message" class="error-message">
+            データの取得に失敗しました。しばらくしてからもう一度お試しください。
+        </div>
+        
+        <div class="bus-stops">
+            <div class="bus-stop">
+                <h2>工学部前（出発駅）</h2>
+                <div class="congestion" id="engineering-congestion">
+                    混雑状況: データなし
+                </div>
+                <div class="departure-times" id="engineering-times">
+                    <!-- ここに時刻表データが入ります -->
+                </div>
+            </div>
+            
+            <div class="bus-stop">
+                <h2>人科前（停留所）</h2>
+                <div class="congestion" id="humanities-congestion">
+                    混雑状況: データなし
+                </div>
+                <div class="departure-times" id="humanities-times">
+                    <!-- ここに時刻表データが入ります -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 時刻表データ
+        const busSchedule = {
+            engineering: [
+                { hour: 7, minutes: [30, 45, 55] },
+                { hour: 8, minutes: [10, 25, 40, 55] },
+                { hour: 9, minutes: [10, 25, 40, 55] },
+                { hour: 10, minutes: [10, 25, 40, 55] },
+                { hour: 11, minutes: [10, 25, 40, 55] },
+                { hour: 12, minutes: [10, 25, 40, 55] },
+                { hour: 13, minutes: [10, 25, 40, 55] },
+                { hour: 14, minutes: [10, 25, 40, 55] },
+                { hour: 15, minutes: [10, 25, 40, 55] },
+                { hour: 16, minutes: [10, 25, 40, 55] },
+                { hour: 17, minutes: [10, 25, 40, 55] },
+                { hour: 18, minutes: [10, 25, 40] }
+            ],
+            humanities: [
+                { hour: 7, minutes: [35, 50] },
+                { hour: 8, minutes: [0, 15, 30, 45] },
+                { hour: 9, minutes: [0, 15, 30, 45] },
+                { hour: 10, minutes: [0, 15, 30, 45] },
+                { hour: 11, minutes: [0, 15, 30, 45] },
+                { hour: 12, minutes: [0, 15, 30, 45] },
+                { hour: 13, minutes: [0, 15, 30, 45] },
+                { hour: 14, minutes: [0, 15, 30, 45] },
+                { hour: 15, minutes: [0, 15, 30, 45] },
+                { hour: 16, minutes: [0, 15, 30, 45] },
+                { hour: 17, minutes: [0, 15, 30, 45] },
+                { hour: 18, minutes: [0, 15, 30] }
+            ]
+        };
+
+        // 混雑度のラベル
+        const congestionLabels = {
+            0: { text: '空いています', class: 'low' },
+            1: { text: 'やや混雑しています', class: 'medium' },
+            2: { text: '混雑しています', class: 'high' }
+        };
+
+        // DOM要素
+        const elements = {
+            lastUpdated: document.getElementById('last-updated'),
+            refreshBtn: document.getElementById('refresh-btn'),
+            errorMessage: document.getElementById('error-message'),
+            loading: document.getElementById('loading'),
+            engineeringCongestion: document.getElementById('engineering-congestion'),
+            humanitiesCongestion: document.getElementById('humanities-congestion'),
+            engineeringTimes: document.getElementById('engineering-times'),
+            humanitiesTimes: document.getElementById('humanities-times')
+        };
+
+        // 残り時間を計算
+        function calculateRemainingTime() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            
+            updateBusStopTimes('engineering', currentHour, currentMinute);
+            updateBusStopTimes('humanities', currentHour, currentMinute);
+        }
+
+        // バス停の時刻表を更新
+        function updateBusStopTimes(stopName, currentHour, currentMinute) {
+            const scheduleData = busSchedule[stopName];
+            const timesContainer = document.getElementById(`${stopName}-times`);
+            
+            // 現在の時刻から3つの最寄りの出発時間を見つける
+            const nextDepartures = [];
+            
+            for (const hourData of scheduleData) {
+                const hour = hourData.hour;
+                
+                for (const minute of hourData.minutes) {
+                    // 時間を分に変換して比較
+                    const departureInMinutes = hour * 60 + minute;
+                    const currentInMinutes = currentHour * 60 + currentMinute;
+                    
+                    if (departureInMinutes >= currentInMinutes) {
+                        nextDepartures.push({
+                            hour,
+                            minute,
+                            remainingMinutes: departureInMinutes - currentInMinutes
+                        });
+                        
+                        if (nextDepartures.length >= 3) {
+                            break;
+                        }
+                    }
+                }
+                
+                if (nextDepartures.length >= 3) {
+                    break;
+                }
+            }
+            
+            // コンテナを空にする
+            timesContainer.innerHTML = '';
+            
+            if (nextDepartures.length === 0) {
+                timesContainer.innerHTML = '<p>本日の運行は終了しました</p>';
+                return;
+            }
+            
+            // 次の出発時間を表示
+            for (const departure of nextDepartures) {
+                const timeElement = document.createElement('div');
+                timeElement.className = 'departure-time';
+                
+                const timeText = document.createElement('span');
+                timeText.textContent = `${departure.hour}:${departure.minute.toString().padStart(2, '0')}`;
+                
+                const remainingText = document.createElement('span');
+                if (departure.remainingMinutes === 0) {
+                    remainingText.textContent = '出発直前';
+                    remainingText.className = 'high';
+                } else {
+                    remainingText.textContent = `あと${departure.remainingMinutes}分`;
+                    if (departure.remainingMinutes <= 5) {
+                        remainingText.className = 'high';
+                    } else if (departure.remainingMinutes <= 10) {
+                        remainingText.className = 'medium';
+                    }
+                }
+                
+                timeElement.appendChild(timeText);
+                timeElement.appendChild(remainingText);
+                timesContainer.appendChild(timeElement);
+            }
+        }
+
+        // 混雑度を更新
+        function updateCongestion(data) {
+            // 工学部前の混雑度
+            const engineeringLevel = data.engineering;
+            const engineeringInfo = congestionLabels[engineeringLevel];
+            elements.engineeringCongestion.textContent = `混雑状況: ${engineeringInfo.text}`;
+            elements.engineeringCongestion.className = `congestion ${engineeringInfo.class}`;
+            
+            // 人科前の混雑度
+            const humanitiesLevel = data.humanities;
+            const humanitiesInfo = congestionLabels[humanitiesLevel];
+            elements.humanitiesCongestion.textContent = `混雑状況: ${humanitiesInfo.text}`;
+            elements.humanitiesCongestion.className = `congestion ${humanitiesInfo.class}`;
+        }
+
+        // データの更新時間を表示
+        function updateLastUpdated() {
+            const now = new Date();
+            const formattedDate = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
+            const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            elements.lastUpdated.textContent = `最終更新: ${formattedDate} ${formattedTime}`;
+        }
+
+        // バックエンドからデータを取得
+        async function fetchBusStatus() {
+            elements.loading.style.display = 'block';
+            elements.errorMessage.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/bus_status');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // データを更新
+                updateCongestion(data);
+                updateLastUpdated();
+                calculateRemainingTime();
+                
+                elements.loading.style.display = 'none';
+            } catch (error) {
+                console.error('データの取得に失敗しました:', error);
+                elements.errorMessage.style.display = 'block';
+                elements.loading.style.display = 'none';
+            }
+        }
+
+        // 初期化
+        function init() {
+            // 更新ボタンのイベントリスナー
+            elements.refreshBtn.addEventListener('click', fetchBusStatus);
+            
+            // 1分ごとに残り時間を更新
+            setInterval(calculateRemainingTime, 60000);
+            
+            // 初期データ取得
+            fetchBusStatus();
+            
+            // 初期時刻表表示
+            calculateRemainingTime();
+        }
+
+        // DOMが読み込まれたら初期化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
