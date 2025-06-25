@@ -6,7 +6,7 @@ import Adafruit_DHT
 # --- GPIOピンの設定 ---
 TRIG = 15
 ECHO = 14
-DHT_PIN = 4
+DHT_PIN = 7
 DHT_SENSOR = Adafruit_DHT.DHT11
 speed_of_sound = 34370
 
