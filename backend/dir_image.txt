@@ -1,0 +1,15 @@
+backend/
+├── main.py               ← FastAPI アプリ起動ファイル
+├── models/               ← DBモデル
+│   └── base.py
+├── crud/                 ← DB操作（CRUD処理）
+│   └── sensor_data.py
+├── services/             ← Gemini API 等の外部サービス連携
+│   └── image_analysis.py
+├── api/                  ← APIルーティング
+│   └── endpoints/
+│       └── receive.py
+│       └── fetch.py
+├── database/             ← DB初期化等
+│   └── config.py
+└── requirements.txt
