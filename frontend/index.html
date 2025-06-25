@@ -5,18 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>バス停混雑状況</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
+    <script src="schedule.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>バス停混雑状況</h1>
         
         <div class="info-bar">
-            <p id="last-updated">最終更新: --</p>
+            <div class="update-info">
+                <p id="last-updated">最終更新: --</p>
+                <p id="update-status" class="update-status">待機中</p>
+            </div>
             <button id="refresh-btn" class="refresh-btn">更新</button>
         </div>
         
         <div id="loading" class="loading">
-            データを取得中...
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">データを更新中です</p>
+                <p class="loading-subtext">しばらくお待ちください...</p>
+            </div>
         </div>
         
         <div id="error-message" class="error-message">
@@ -24,7 +33,13 @@
         </div>
         
         <div class="bus-stops">
-            <div class="bus-stop">
+            <!-- モバイル用タブ -->
+            <div class="mobile-tabs">
+                <button class="tab-button active" data-tab="engineering">工学部前</button>
+                <button class="tab-button" data-tab="humanities">人科前</button>
+            </div>
+            
+            <div class="bus-stop" id="engineering-stop" data-stop="engineering">
                 <h2>工学部前（出発駅）</h2>
                 <div class="congestion" id="engineering-congestion">
                     混雑状況: データなし
@@ -34,7 +49,7 @@
                 </div>
             </div>
             
-            <div class="bus-stop">
+            <div class="bus-stop" id="humanities-stop" data-stop="humanities">
                 <h2>人科前（停留所）</h2>
                 <div class="congestion" id="humanities-congestion">
                     混雑状況: データなし
@@ -47,38 +62,6 @@
     </div>
 
     <script>
-        // 時刻表データ
-        const busSchedule = {
-            engineering: [
-                { hour: 7, minutes: [30, 45, 55] },
-                { hour: 8, minutes: [10, 25, 40, 55] },
-                { hour: 9, minutes: [10, 25, 40, 55] },
-                { hour: 10, minutes: [10, 25, 40, 55] },
-                { hour: 11, minutes: [10, 25, 40, 55] },
-                { hour: 12, minutes: [10, 25, 40, 55] },
-                { hour: 13, minutes: [10, 25, 40, 55] },
-                { hour: 14, minutes: [10, 25, 40, 55] },
-                { hour: 15, minutes: [10, 25, 40, 55] },
-                { hour: 16, minutes: [10, 25, 40, 55] },
-                { hour: 17, minutes: [10, 25, 40, 55] },
-                { hour: 18, minutes: [10, 25, 40] }
-            ],
-            humanities: [
-                { hour: 7, minutes: [35, 50] },
-                { hour: 8, minutes: [0, 15, 30, 45] },
-                { hour: 9, minutes: [0, 15, 30, 45] },
-                { hour: 10, minutes: [0, 15, 30, 45] },
-                { hour: 11, minutes: [0, 15, 30, 45] },
-                { hour: 12, minutes: [0, 15, 30, 45] },
-                { hour: 13, minutes: [0, 15, 30, 45] },
-                { hour: 14, minutes: [0, 15, 30, 45] },
-                { hour: 15, minutes: [0, 15, 30, 45] },
-                { hour: 16, minutes: [0, 15, 30, 45] },
-                { hour: 17, minutes: [0, 15, 30, 45] },
-                { hour: 18, minutes: [0, 15, 30] }
-            ]
-        };
-
         // 混雑度のラベル
         const congestionLabels = {
             0: { text: '空いています', class: 'low' },
@@ -89,6 +72,7 @@
         // DOM要素
         const elements = {
             lastUpdated: document.getElementById('last-updated'),
+            updateStatus: document.getElementById('update-status'),
             refreshBtn: document.getElementById('refresh-btn'),
             errorMessage: document.getElementById('error-message'),
             loading: document.getElementById('loading'),
@@ -110,43 +94,47 @@
 
         // バス停の時刻表を更新
         function updateBusStopTimes(stopName, currentHour, currentMinute) {
-            const scheduleData = busSchedule[stopName];
+            const scheduleData = window.BUS_SCHEDULE[stopName];
             const timesContainer = document.getElementById(`${stopName}-times`);
-            
-            // 現在の時刻から3つの最寄りの出発時間を見つける
-            const nextDepartures = [];
-            
-            for (const hourData of scheduleData) {
-                const hour = hourData.hour;
-                
-                for (const minute of hourData.minutes) {
-                    // 時間を分に変換して比較
-                    const departureInMinutes = hour * 60 + minute;
-                    const currentInMinutes = currentHour * 60 + currentMinute;
-                    
-                    if (departureInMinutes >= currentInMinutes) {
-                        nextDepartures.push({
-                            hour,
-                            minute,
-                            remainingMinutes: departureInMinutes - currentInMinutes
-                        });
-                        
-                        if (nextDepartures.length >= 3) {
-                            break;
-                        }
-                    }
-                }
-                
-                if (nextDepartures.length >= 3) {
-                    break;
-                }
-            }
             
             // コンテナを空にする
             timesContainer.innerHTML = '';
             
+            // 全てのバス種類の出発時刻を統合
+            const allDepartures = [];
+            
+            for (const [busType, typeData] of Object.entries(scheduleData)) {
+                const busInfo = BUS_TYPES[busType.toUpperCase()];
+                
+                for (const hourData of typeData) {
+                    const hour = hourData.hour;
+                    
+                    for (const minute of hourData.minutes) {
+                        // 時間を分に変換して比較
+                        const departureInMinutes = hour * 60 + minute;
+                        const currentInMinutes = currentHour * 60 + currentMinute;
+                        
+                        if (departureInMinutes >= currentInMinutes) {
+                            allDepartures.push({
+                                hour,
+                                minute,
+                                remainingMinutes: departureInMinutes - currentInMinutes,
+                                busType: busType,
+                                busInfo: busInfo
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // 時刻順にソート
+            allDepartures.sort((a, b) => a.remainingMinutes - b.remainingMinutes);
+            
+            // 最初の3つの出発時刻を表示
+            const nextDepartures = allDepartures.slice(0, 3);
+            
             if (nextDepartures.length === 0) {
-                timesContainer.innerHTML = '<p>本日の運行は終了しました</p>';
+                timesContainer.innerHTML = '<p class="no-service">本日の運行は終了しました</p>';
                 return;
             }
             
@@ -155,58 +143,131 @@
                 const timeElement = document.createElement('div');
                 timeElement.className = 'departure-time';
                 
-                const timeText = document.createElement('span');
+                const leftSection = document.createElement('div');
+                leftSection.className = 'time-section';
+                
+                const timeText = document.createElement('div');
+                timeText.className = 'time-text';
                 timeText.textContent = `${departure.hour}:${departure.minute.toString().padStart(2, '0')}`;
                 
-                const remainingText = document.createElement('span');
+                const busTypeLabel = document.createElement('div');
+                busTypeLabel.className = 'bus-type-label';
+                busTypeLabel.style.backgroundColor = departure.busInfo.color;
+                busTypeLabel.textContent = departure.busInfo.shortName;
+                
+                leftSection.appendChild(timeText);
+                leftSection.appendChild(busTypeLabel);
+                
+                const rightSection = document.createElement('div');
+                rightSection.className = 'remaining-section';
+                
+                const remainingText = document.createElement('div');
+                remainingText.className = 'remaining-text';
                 if (departure.remainingMinutes === 0) {
                     remainingText.textContent = '出発直前';
-                    remainingText.className = 'high';
+                    remainingText.classList.add('urgent');
+                } else if (departure.remainingMinutes <= 5) {
+                    remainingText.textContent = `あと${departure.remainingMinutes}分`;
+                    remainingText.classList.add('soon');
+                } else if (departure.remainingMinutes <= 10) {
+                    remainingText.textContent = `あと${departure.remainingMinutes}分`;
+                    remainingText.classList.add('medium');
                 } else {
                     remainingText.textContent = `あと${departure.remainingMinutes}分`;
-                    if (departure.remainingMinutes <= 5) {
-                        remainingText.className = 'high';
-                    } else if (departure.remainingMinutes <= 10) {
-                        remainingText.className = 'medium';
-                    }
+                    remainingText.classList.add('normal');
                 }
                 
-                timeElement.appendChild(timeText);
-                timeElement.appendChild(remainingText);
+                rightSection.appendChild(remainingText);
+                
+                timeElement.appendChild(leftSection);
+                timeElement.appendChild(rightSection);
                 timesContainer.appendChild(timeElement);
             }
         }
 
         // 混雑度を更新
         function updateCongestion(data) {
-            // 工学部前の混雑度
-            const engineeringLevel = data.engineering;
-            const engineeringInfo = congestionLabels[engineeringLevel];
-            elements.engineeringCongestion.textContent = `混雑状況: ${engineeringInfo.text}`;
-            elements.engineeringCongestion.className = `congestion ${engineeringInfo.class}`;
+            // 待機人数から混雑度を計算
+            const queueCount = data.num_queue_people || 0;
+            let congestionLevel;
             
-            // 人科前の混雑度
-            const humanitiesLevel = data.humanities;
-            const humanitiesInfo = congestionLabels[humanitiesLevel];
-            elements.humanitiesCongestion.textContent = `混雑状況: ${humanitiesInfo.text}`;
-            elements.humanitiesCongestion.className = `congestion ${humanitiesInfo.class}`;
+            if (queueCount <= 5) {
+                congestionLevel = 0; // 空いています
+            } else if (queueCount <= 15) {
+                congestionLevel = 1; // やや混雑しています
+            } else {
+                congestionLevel = 2; // 混雑しています
+            }
+            
+            const congestionInfo = congestionLabels[congestionLevel];
+            
+            // 工学部前の混雑度を更新（APIは工学部前のデータと仮定）
+            elements.engineeringCongestion.innerHTML = `
+                <div class="congestion-main">混雑状況: ${congestionInfo.text}</div>
+                <div class="congestion-details">
+                    <span class="queue-count">待機人数: ${queueCount}人</span>
+                    <span class="gender-ratio">${data.gender_ratio || 'データなし'}</span>
+                </div>
+                <div class="environmental-data">
+                    <span class="temperature">気温: ${data.temperature}°C</span>
+                    <span class="humidity">湿度: ${data.humidity}%</span>
+                </div>
+            `;
+            elements.engineeringCongestion.className = `congestion ${congestionInfo.class}`;
+            
+            // 人科前は現在データがないため、デフォルト表示
+            elements.humanitiesCongestion.textContent = '混雑状況: データなし';
+            elements.humanitiesCongestion.className = 'congestion';
         }
 
         // データの更新時間を表示
-        function updateLastUpdated() {
-            const now = new Date();
-            const formattedDate = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
-            const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-            elements.lastUpdated.textContent = `最終更新: ${formattedDate} ${formattedTime}`;
+        function updateLastUpdated(receivedAt = null) {
+            let displayTime;
+            let relativeTime;
+            
+            if (receivedAt) {
+                // APIから受信した時刻を使用
+                const receivedDate = new Date(receivedAt);
+                const now = new Date();
+                const timeDiff = Math.floor((now - receivedDate) / 1000); // 秒単位
+                
+                const formattedDate = `${receivedDate.getFullYear()}/${(receivedDate.getMonth() + 1).toString().padStart(2, '0')}/${receivedDate.getDate().toString().padStart(2, '0')}`;
+                const formattedTime = `${receivedDate.getHours().toString().padStart(2, '0')}:${receivedDate.getMinutes().toString().padStart(2, '0')}:${receivedDate.getSeconds().toString().padStart(2, '0')}`;
+                displayTime = `最終更新: ${formattedDate} ${formattedTime}`;
+                
+                // 相対時間の計算
+                if (timeDiff < 60) {
+                    relativeTime = `${timeDiff}秒前に更新`;
+                } else if (timeDiff < 3600) {
+                    relativeTime = `${Math.floor(timeDiff / 60)}分前に更新`;
+                } else {
+                    relativeTime = `${Math.floor(timeDiff / 3600)}時間前に更新`;
+                }
+            } else {
+                // フォールバック：現在時刻を使用
+                const now = new Date();
+                const formattedDate = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
+                const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                displayTime = `最終更新: ${formattedDate} ${formattedTime}`;
+                relativeTime = '今更新';
+            }
+            
+            elements.lastUpdated.textContent = displayTime;
+            elements.updateStatus.textContent = relativeTime;
+            elements.updateStatus.className = 'update-status';
         }
 
         // バックエンドからデータを取得
         async function fetchBusStatus() {
-            elements.loading.style.display = 'block';
+            elements.loading.classList.add('show');
             elements.errorMessage.style.display = 'none';
+            elements.refreshBtn.disabled = true;
+            elements.refreshBtn.textContent = '更新中...';
+            elements.updateStatus.textContent = 'データを取得中...';
+            elements.updateStatus.className = 'update-status updating';
             
             try {
-                const response = await fetch('/api/bus_status');
+                const response = await fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.BUS_STATUS);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -216,14 +277,23 @@
                 
                 // データを更新
                 updateCongestion(data);
-                updateLastUpdated();
+                updateLastUpdated(data.received_at);
                 calculateRemainingTime();
                 
-                elements.loading.style.display = 'none';
+                // 少し遅延を入れてローディング完了を視覚的に示す
+                setTimeout(() => {
+                    elements.loading.classList.remove('show');
+                    elements.refreshBtn.disabled = false;
+                    elements.refreshBtn.textContent = '更新';
+                }, 300);
             } catch (error) {
                 console.error('データの取得に失敗しました:', error);
                 elements.errorMessage.style.display = 'block';
-                elements.loading.style.display = 'none';
+                elements.loading.classList.remove('show');
+                elements.refreshBtn.disabled = false;
+                elements.refreshBtn.textContent = '更新';
+                elements.updateStatus.textContent = '更新に失敗しました';
+                elements.updateStatus.className = 'update-status error';
             }
         }
 
@@ -232,14 +302,56 @@
             // 更新ボタンのイベントリスナー
             elements.refreshBtn.addEventListener('click', fetchBusStatus);
             
+            // タブ切り替えのイベントリスナー（モバイル用）
+            initMobileTabs();
+            
             // 1分ごとに残り時間を更新
-            setInterval(calculateRemainingTime, 60000);
+            setInterval(calculateRemainingTime, 1000);
             
             // 初期データ取得
             fetchBusStatus();
             
             // 初期時刻表表示
             calculateRemainingTime();
+        }
+        
+        // モバイルタブの初期化
+        function initMobileTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const busStops = document.querySelectorAll('.bus-stop');
+            
+            // 初期状態：工学部前を表示
+            showBusStop('engineering');
+            
+            // タブボタンのクリックイベント
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const targetTab = e.target.dataset.tab;
+                    
+                    // すべてのタブボタンから active クラスを削除
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // クリックされたタブボタンに active クラスを追加
+                    e.target.classList.add('active');
+                    
+                    // バス停を切り替え
+                    showBusStop(targetTab);
+                });
+            });
+        }
+        
+        // バス停の表示切り替え
+        function showBusStop(stopName) {
+            const busStops = document.querySelectorAll('.bus-stop');
+            
+            busStops.forEach(stop => {
+                const stopData = stop.dataset.stop;
+                if (stopData === stopName) {
+                    stop.classList.add('active');
+                } else {
+                    stop.classList.remove('active');
+                }
+            });
         }
 
         // DOMが読み込まれたら初期化
