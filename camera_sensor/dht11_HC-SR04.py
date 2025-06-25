@@ -1,7 +1,7 @@
 import Adafruit_DHT
 
 sensor = Adafruit_DHT.DHT11
-pin = 4  # GPIO4（物理ピン7）
+pin = 17  # GPIO4（物理ピン7）
 
 humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
 
