@@ -2,7 +2,7 @@
 
 import requests
 
-url = "http://localhost:8000/api/upload" #URLは確認必須
+url = "http://172.16.1.98:8000/api/upload" #URLは確認必須
 files = {
     "image": open("sample1.jpg", "rb") #sample用の画像
 }
