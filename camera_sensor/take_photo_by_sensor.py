@@ -9,7 +9,7 @@ ECHO = 14
 SOUND_SPEED = 34300  # cm/s
 
 # 撮影のしきい値（この距離以上なら撮影）
-THRESHOLD_CM = 50
+THRESHOLD_CM = 30
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(TRIG, GPIO.OUT)
