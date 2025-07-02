@@ -18,7 +18,7 @@ MEASURE_NUM  = 3              # 測距回数（中央値）
 CAP_DIR      = "/home/pi/capture"
 os.makedirs(CAP_DIR, exist_ok=True)
 
-NODE_B_URL   = "http://172.16.1.96:5000/sensor"   # ★ Node B の IP に書き換え172.16.1.96
+NODE_B_URL   = "http://172.16.1.27:5000/sensor"   # ★ Node B の IP に書き換え172.16.1.27
 
 # ── GPIO & カメラ初期化 ───────────────────────────────────
 GPIO.setmode(GPIO.BCM)
