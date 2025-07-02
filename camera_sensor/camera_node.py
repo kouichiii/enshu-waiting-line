@@ -15,7 +15,7 @@ from picamera2 import Picamera2
 TRIG, ECHO   = 15, 14         # HC-SR04 ピン
 THRESHOLD_CM = 30             # 撮影トリガ距離
 MEASURE_NUM  = 3              # 測距回数（中央値）
-CAP_DIR      = "/home/pi/capture"
+CAP_DIR      = "/tmp/capture"
 os.makedirs(CAP_DIR, exist_ok=True)
 
 NODE_B_URL   = "http://172.16.1.27:5000/sensor"   # ★ Node B の IP に書き換え172.16.1.27
