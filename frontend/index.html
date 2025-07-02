@@ -20,16 +20,25 @@
             <button id="refresh-btn" class="refresh-btn">更新</button>
         </div>
         
-        <div id="loading" class="loading">
-            <div class="loading-content">
-                <div class="loading-spinner"></div>
-                <p class="loading-text">データを更新中です</p>
-                <p class="loading-subtext">しばらくお待ちください...</p>
-            </div>
-        </div>
+
         
         <div id="error-message" class="error-message">
             データの取得に失敗しました。しばらくしてからもう一度お試しください。
+        </div>
+        
+        <!-- 全体環境・予測情報 -->
+        <div class="global-info">
+            <div class="environment-data">
+                <h3>🌡️ 環境情報</h3>
+                <div class="env-details">
+                    <span id="global-temperature" class="temp-info">気温: --</span>
+                    <span id="global-humidity" class="humidity-info">湿度: --</span>
+                </div>
+            </div>
+            <div class="prediction-data">
+                <h3>🔮 快適度予測</h3>
+                <div id="global-comfort" class="comfort-info">-- --</div>
+            </div>
         </div>
         
         <div class="bus-stops">
@@ -62,11 +71,22 @@
     </div>
 
     <script>
-        // 混雑度のラベル
+        // 混雑度のラベル（1-5の5段階評価）
         const congestionLabels = {
-            0: { text: '空いています', class: 'low' },
-            1: { text: 'やや混雑しています', class: 'medium' },
-            2: { text: '混雑しています', class: 'high' }
+            1: { text: '空いています', class: 'low' },
+            2: { text: 'やや空いています', class: 'low' },
+            3: { text: '普通', class: 'medium' },
+            4: { text: 'やや混雑しています', class: 'medium' },
+            5: { text: '混雑しています', class: 'high' }
+        };
+        
+        // 快適度のラベル
+        const comfortabilityLabels = {
+            1: { text: '非常に快適', class: 'very-good', emoji: '😊' },
+            2: { text: '快適', class: 'good', emoji: '🙂' },
+            3: { text: '普通', class: 'normal', emoji: '😐' },
+            4: { text: 'やや不快', class: 'bad', emoji: '😕' },
+            5: { text: '不快', class: 'very-bad', emoji: '😞' }
         };
 
         // DOM要素
@@ -75,7 +95,9 @@
             updateStatus: document.getElementById('update-status'),
             refreshBtn: document.getElementById('refresh-btn'),
             errorMessage: document.getElementById('error-message'),
-            loading: document.getElementById('loading'),
+            globalTemperature: document.getElementById('global-temperature'),
+            globalHumidity: document.getElementById('global-humidity'),
+            globalComfort: document.getElementById('global-comfort'),
             engineeringCongestion: document.getElementById('engineering-congestion'),
             humanitiesCongestion: document.getElementById('humanities-congestion'),
             engineeringTimes: document.getElementById('engineering-times'),
@@ -187,52 +209,109 @@
 
         // 混雑度を更新
         function updateCongestion(data) {
-            // 待機人数から混雑度を計算
-            const queueCount = data.num_queue_people || 0;
-            let congestionLevel;
+            // 全体環境情報・予測情報を更新
+            updateGlobalInfo(data);
             
-            if (queueCount <= 5) {
-                congestionLevel = 0; // 空いています
-            } else if (queueCount <= 15) {
-                congestionLevel = 1; // やや混雑しています
-            } else {
-                congestionLevel = 2; // 混雑しています
+            // 工学部前（bus）の混雑度を更新
+            if (data.bus) {
+                const busData = data.bus;
+                const congestionLevel = busData.congestion_level || 3;
+                
+                // 混雑度ラベルの取得（1-5の範囲に調整）
+                const adjustedLevel = Math.min(Math.max(congestionLevel, 1), 5);
+                const congestionInfo = congestionLabels[adjustedLevel];
+                
+                elements.engineeringCongestion.innerHTML = `
+                    <div class="congestion-main">混雑状況: ${congestionInfo.text}</div>
+                    <div class="congestion-details">
+                        <span class="gender-ratio">${formatGenderRatio(busData.gender_ratio)}</span>
+                    </div>
+                `;
+                elements.engineeringCongestion.className = `congestion ${congestionInfo.class}`;
             }
             
-            const congestionInfo = congestionLabels[congestionLevel];
+            // 人科前（queue）の混雑度を更新
+            if (data.queue) {
+                const queueData = data.queue;
+                const queueCount = queueData.num_queue_people || 0;
+                let congestionLevel;
+                
+                // 待機人数から混雑度を計算（1-5の5段階評価）
+                if (queueCount === 0) {
+                    congestionLevel = 1; // 空いています
+                } else if (queueCount <= 3) {
+                    congestionLevel = 2; // やや空いています
+                } else if (queueCount <= 8) {
+                    congestionLevel = 3; // 普通
+                } else if (queueCount <= 15) {
+                    congestionLevel = 4; // やや混雑しています
+                } else {
+                    congestionLevel = 5; // 混雑しています
+                }
+                
+                const congestionInfo = congestionLabels[congestionLevel];
+                
+                elements.humanitiesCongestion.innerHTML = `
+                    <div class="congestion-main">混雑状況: ${congestionInfo.text}</div>
+                    <div class="congestion-details">
+                        <span class="queue-count">待機人数: ${formatQueueCount(queueCount)}</span>
+                        <span class="gender-ratio">${formatGenderRatio(queueData.gender_ratio)}</span>
+                    </div>
+                `;
+                elements.humanitiesCongestion.className = `congestion ${congestionInfo.class}`;
+            }
+        }
+        
+        // 全体情報（環境・予測）を更新
+        function updateGlobalInfo(data) {
+            // 温度・湿度の表示（queueデータから取得）
+            if (data.queue) {
+                const temperature = data.queue.temperature;
+                const humidity = data.queue.humidity;
+                
+                elements.globalTemperature.textContent = temperature ? `気温: ${temperature}°C` : '気温: --';
+                elements.globalHumidity.textContent = humidity ? `湿度: ${humidity}%` : '湿度: --';
+            }
             
-            // 工学部前の混雑度を更新（APIは工学部前のデータと仮定）
-            elements.engineeringCongestion.innerHTML = `
-                <div class="congestion-main">混雑状況: ${congestionInfo.text}</div>
-                <div class="congestion-details">
-                    <span class="queue-count">待機人数: ${queueCount}人</span>
-                    <span class="gender-ratio">${data.gender_ratio || 'データなし'}</span>
-                </div>
-                <div class="environmental-data">
-                    <span class="temperature">気温: ${data.temperature}°C</span>
-                    <span class="humidity">湿度: ${data.humidity}%</span>
-                </div>
-            `;
-            elements.engineeringCongestion.className = `congestion ${congestionInfo.class}`;
-            
-            // 人科前は現在データがないため、デフォルト表示
-            elements.humanitiesCongestion.textContent = '混雑状況: データなし';
-            elements.humanitiesCongestion.className = 'congestion';
+            // 快適度予測の表示
+            if (data.predicted) {
+                const comfortLevel = data.predicted.comfortability || 3;
+                const comfortInfo = comfortabilityLabels[comfortLevel] || comfortabilityLabels[3];
+                
+                elements.globalComfort.innerHTML = `${comfortInfo.emoji} ${comfortInfo.text}`;
+                elements.globalComfort.className = `comfort-info ${comfortInfo.class}`;
+            } else {
+                elements.globalComfort.textContent = '-- --';
+                elements.globalComfort.className = 'comfort-info';
+            }
         }
 
         // データの更新時間を表示
-        function updateLastUpdated(receivedAt = null) {
+        function updateLastUpdated(data = null) {
             let displayTime;
             let relativeTime;
+            let receivedAt = null;
+            
+            // 最新の受信時刻を取得（busとqueueのうち新しい方）
+            if (data) {
+                const busTime = data.bus?.received_at ? new Date(data.bus.received_at) : null;
+                const queueTime = data.queue?.received_at ? new Date(data.queue.received_at) : null;
+                
+                if (busTime && queueTime) {
+                    receivedAt = busTime > queueTime ? busTime : queueTime;
+                } else if (busTime) {
+                    receivedAt = busTime;
+                } else if (queueTime) {
+                    receivedAt = queueTime;
+                }
+            }
             
             if (receivedAt) {
-                // APIから受信した時刻を使用
-                const receivedDate = new Date(receivedAt);
                 const now = new Date();
-                const timeDiff = Math.floor((now - receivedDate) / 1000); // 秒単位
+                const timeDiff = Math.floor((now - receivedAt) / 1000); // 秒単位
                 
-                const formattedDate = `${receivedDate.getFullYear()}/${(receivedDate.getMonth() + 1).toString().padStart(2, '0')}/${receivedDate.getDate().toString().padStart(2, '0')}`;
-                const formattedTime = `${receivedDate.getHours().toString().padStart(2, '0')}:${receivedDate.getMinutes().toString().padStart(2, '0')}:${receivedDate.getSeconds().toString().padStart(2, '0')}`;
+                const formattedDate = `${receivedAt.getFullYear()}/${(receivedAt.getMonth() + 1).toString().padStart(2, '0')}/${receivedAt.getDate().toString().padStart(2, '0')}`;
+                const formattedTime = `${receivedAt.getHours().toString().padStart(2, '0')}:${receivedAt.getMinutes().toString().padStart(2, '0')}:${receivedAt.getSeconds().toString().padStart(2, '0')}`;
                 displayTime = `最終更新: ${formattedDate} ${formattedTime}`;
                 
                 // 相対時間の計算
@@ -259,7 +338,6 @@
 
         // バックエンドからデータを取得
         async function fetchBusStatus() {
-            elements.loading.classList.add('show');
             elements.errorMessage.style.display = 'none';
             elements.refreshBtn.disabled = true;
             elements.refreshBtn.textContent = '更新中...';
@@ -277,19 +355,15 @@
                 
                 // データを更新
                 updateCongestion(data);
-                updateLastUpdated(data.received_at);
+                updateLastUpdated(data);
                 calculateRemainingTime();
                 
-                // 少し遅延を入れてローディング完了を視覚的に示す
-                setTimeout(() => {
-                    elements.loading.classList.remove('show');
-                    elements.refreshBtn.disabled = false;
-                    elements.refreshBtn.textContent = '更新';
-                }, 300);
+                // 更新完了
+                elements.refreshBtn.disabled = false;
+                elements.refreshBtn.textContent = '更新';
             } catch (error) {
                 console.error('データの取得に失敗しました:', error);
                 elements.errorMessage.style.display = 'block';
-                elements.loading.classList.remove('show');
                 elements.refreshBtn.disabled = false;
                 elements.refreshBtn.textContent = '更新';
                 elements.updateStatus.textContent = '更新に失敗しました';
@@ -352,6 +426,31 @@
                     stop.classList.remove('active');
                 }
             });
+        }
+
+        // 性別比率を日本語に変換
+        function formatGenderRatio(genderRatio) {
+            if (!genderRatio || genderRatio === 'データなし') {
+                return 'データなし';
+            }
+            
+            // gender_ratioが文字列の場合、英語を日本語に変換
+            const japaneseRatio = genderRatio
+                .replace(/female/g, '女性')
+                .replace(/male/g, '男性');
+            
+            return japaneseRatio;
+        }
+
+        // 待機人数を5人単位で丸めて表示
+        function formatQueueCount(count) {
+            if (count === 0) {
+                return '0人';
+            }
+            
+            // 5人単位で丸める
+            const rounded = Math.ceil(count / 5) * 5;
+            return `約${rounded}人`;
         }
 
         // DOMが読み込まれたら初期化

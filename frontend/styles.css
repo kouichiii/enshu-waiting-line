@@ -1,13 +1,13 @@
-/* 基本スタイル */
+/* シンプル基本スタイル */
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
+    box-sizing: border-box;
 }
 
 body {
-    background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
     color: #333;
     line-height: 1.6;
     padding: 20px;
@@ -16,329 +16,156 @@ body {
 .container {
     max-width: 1000px;
     margin: 0 auto;
-    background-color: #fff;
+    background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 h1 {
     text-align: center;
     margin-bottom: 20px;
-    color: #0055a4;
+    color: #2c3e50;
 }
 
+/* 情報バー */
 .info-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 12px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-}
-
-.update-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    padding: 15px;
+    background-color: #f1f3f4;
+    border-radius: 6px;
+    margin-bottom: 20px;
 }
 
 .info-bar p {
     margin: 0;
-    color: #495057;
-    font-weight: 500;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.update-status {
-    font-size: 12px !important;
-    color: #6c757d !important;
-    font-weight: 400 !important;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.update-status::before {
-    content: '●';
-    font-size: 8px;
-    color: #28a745;
-    animation: pulse-dot 2s infinite;
-}
-
-.update-status.updating::before {
-    color: #ffc107;
-    animation: pulse-updating 1s infinite;
-}
-
-.update-status.error::before {
-    color: #dc3545;
-    animation: none;
+    font-size: 14px;
 }
 
 .refresh-btn {
-    background: linear-gradient(135deg, #0055a4 0%, #003c7a 100%);
+    background-color: #007bff;
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: 25px;
+    padding: 8px 16px;
+    border-radius: 4px;
     cursor: pointer;
-    font-weight: 600;
     font-size: 14px;
-    transition: all 0.3s ease;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 100px;
-    justify-content: center;
 }
 
-
-.refresh-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #003c7a 0%, #002952 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 85, 164, 0.4);
-}
-
-.refresh-btn:hover:not(:disabled)::before {
-    transform: rotate(180deg);
-}
-
-.refresh-btn:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 85, 164, 0.3);
+.refresh-btn:hover {
+    background-color: #0056b3;
 }
 
 .refresh-btn:disabled {
-    background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
+    background-color: #6c757d;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: 0 2px 8px rgba(158, 158, 158, 0.3);
 }
 
-.refresh-btn:disabled::before {
-    content: '';
-    animation: none;
+/* 全体情報 */
+.global-info {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
-.refresh-btn:disabled::after {
-    content: '';
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top: 2px solid #ffffff;
-    border-radius: 50%;
-    animation: button-spin 1s linear infinite;
+.environment-data,
+.prediction-data {
+    flex: 1;
+    min-width: 200px;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
 }
 
-@keyframes button-spin {
-    0% {
-        transform: translateY(-50%) rotate(0deg);
-    }
-    100% {
-        transform: translateY(-50%) rotate(360deg);
-    }
+.environment-data h3,
+.prediction-data h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #495057;
 }
 
+.env-details {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.temp-info,
+.humidity-info {
+    background-color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    border: 1px solid #e9ecef;
+}
+
+.comfort-info {
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    background-color: white;
+    border: 1px solid #e9ecef;
+}
+
+.comfort-info.very-good { background-color: #d4edda; color: #155724; }
+.comfort-info.good { background-color: #cce5ff; color: #004085; }
+.comfort-info.normal { background-color: #fff3cd; color: #856404; }
+.comfort-info.bad { background-color: #f8d7da; color: #721c24; }
+.comfort-info.very-bad { background-color: #f5c6cb; color: #721c24; }
+
+/* バス停 */
 .bus-stops {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    margin-bottom: 20px;
 }
 
 .bus-stop {
     flex: 1 1 300px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
     padding: 15px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .bus-stop h2 {
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #eee;
-    color: #0055a4;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e9ecef;
+    color: #495057;
 }
 
-.congestion {
-    margin: 10px 0;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.low {
-    color: #28a745;
-}
-
-.medium {
-    color: #ffc107;
-}
-
-.high {
-    color: #dc3545;
-}
-
-.departure-times {
-    margin-top: 20px;
-}
-
-.departure-time {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    margin: 12px 0;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    border-radius: 12px;
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.departure-time:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.departure-time::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(180deg, #0055a4 0%, #28a745 100%);
-}
-
-.time-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.time-text {
-    font-size: 24px;
-    font-weight: 700;
-    color: #212529;
-    letter-spacing: 0.5px;
-    min-width: 80px;
-}
-
-.bus-type-label {
-    font-size: 11px;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    text-align: center;
-    white-space: nowrap;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.remaining-section {
-    text-align: right;
-}
-
-.remaining-text {
-    font-size: 16px;
-    font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 25px;
-    text-align: center;
-    min-width: 100px;
-    transition: all 0.3s ease;
-}
-
-.remaining-text.urgent {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    color: white;
-    animation: pulse-urgent 2s infinite;
-    box-shadow: 0 0 20px rgba(220, 53, 69, 0.3);
-}
-
-.remaining-text.soon {
-    background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
-    color: white;
-    animation: pulse-soon 3s infinite;
-    box-shadow: 0 0 15px rgba(253, 126, 20, 0.3);
-}
-
-.remaining-text.medium {
-    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-    color: #212529;
-    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
-}
-
-.remaining-text.normal {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-}
-
-@keyframes pulse-urgent {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.9; }
-}
-
-@keyframes pulse-soon {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-}
-
-.no-service {
-    color: #6c757d;
-    font-style: italic;
-    text-align: center;
-    padding: 40px 20px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 12px;
-    border: 2px dashed #dee2e6;
-    font-size: 16px;
-}
-
-/* 混雑状況の詳細表示スタイル */
+/* 混雑状況 */
 .congestion-main {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 10px;
 }
 
+.low { color: #28a745; }
+.medium { color: #ffc107; }
+.high { color: #dc3545; }
+
 .congestion-details {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-size: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-.queue-count {
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: bold;
-}
-
+.queue-count,
 .gender-ratio {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: #f8f9fa;
     padding: 4px 8px;
-    border-radius: 12px;
+    border-radius: 4px;
     font-size: 12px;
 }
 
@@ -346,202 +173,129 @@ h1 {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
-    color: rgba(0, 0, 0, 0.7);
+    margin-bottom: 10px;
 }
 
-.temperature, .humidity {
-    background-color: rgba(255, 255, 255, 0.6);
+.temperature,
+.humidity {
+    background-color: #f8f9fa;
     padding: 2px 6px;
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
-/* ローディング・エラーメッセージ */
-.loading {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(3px);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    animation: fadeIn 0.3s ease-out;
+/* 時刻表 */
+.departure-times {
+    margin-top: 15px;
 }
 
-.loading.show {
+.departure-time {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin: 8px 0;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
 }
 
-.loading-content {
-    background: white;
-    padding: 40px 50px;
-    border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    max-width: 90%;
-    position: relative;
-    overflow: hidden;
+.time-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.loading-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(33, 150, 243, 0.1),
-        transparent
-    );
-    animation: loading-shimmer 2s infinite;
+.time-text {
+    font-size: 20px;
+    font-weight: bold;
+    color: #212529;
 }
 
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e3f2fd;
-    border-top: 4px solid #2196f3;
-    border-radius: 50%;
-    margin: 0 auto 20px;
-    animation: loading-spin 1s linear infinite;
-}
-
-.loading-text {
-    color: #1976d2;
-    font-size: 18px;
+.bus-type-label {
+    font-size: 11px;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
     font-weight: 600;
-    margin: 0;
 }
 
-.loading-subtext {
-    color: #666;
+.remaining-text {
     font-size: 14px;
-    margin: 8px 0 0 0;
-    opacity: 0.8;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 600;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+.remaining-text.urgent {
+    background-color: #dc3545;
+    color: white;
 }
 
-@keyframes loading-shimmer {
-    0% {
-        left: -100%;
-    }
-    100% {
-        left: 100%;
-    }
+.remaining-text.soon {
+    background-color: #fd7e14;
+    color: white;
 }
 
-@keyframes loading-spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+.remaining-text.medium {
+    background-color: #ffc107;
+    color: #212529;
 }
 
-.error-message {
-    display: none;
+.remaining-text.normal {
+    background-color: #28a745;
+    color: white;
+}
+
+.no-service {
+    color: #6c757d;
+    font-style: italic;
     text-align: center;
     padding: 20px;
-    margin: 20px 0;
-    border-radius: 8px;
-    font-size: 16px;
-    background-color: #ffebee;
-    border: 2px solid #f44336;
-    color: #c62828;
-    position: relative;
-    animation: slideIn 0.3s ease-out;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px dashed #dee2e6;
 }
 
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
+/* エラーメッセージ */
 .error-message {
-    background-color: #ffebee;
-    border: 2px solid #f44336;
-    color: #c62828;
+    display: none;
+    text-align: center;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 6px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
 }
 
-.error-message::before {
-    content: '⚠️';
-    display: inline-block;
-    margin-right: 8px;
-    font-size: 18px;
-}
-
-/* モバイル用タブ */
+/* モバイルタブ */
 .mobile-tabs {
     display: none;
     background: white;
-    border-radius: 12px;
-    padding: 6px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 4px;
+    margin-bottom: 15px;
+    border: 1px solid #dee2e6;
 }
 
 .tab-button {
     flex: 1;
-    padding: 12px 16px;
+    padding: 10px 15px;
     border: none;
     background: transparent;
     color: #6c757d;
-    font-weight: 500;
     font-size: 14px;
-    border-radius: 8px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
 }
 
 .tab-button.active {
-    background: linear-gradient(135deg, #0055a4 0%, #003c7a 100%);
+    background-color: #007bff;
     color: white;
-    box-shadow: 0 2px 8px rgba(0, 85, 164, 0.3);
 }
 
-.tab-button:not(.active):hover {
-    background-color: #f8f9fa;
-    color: #495057;
-}
-
-/* レスポンシブデザイン */
-@media (min-width: 481px) {
-    /* デスクトップ・タブレット表示 */
-    .mobile-tabs {
-        display: none;
-    }
-    
-    .bus-stop {
-        display: block !important;
-    }
-}
-
+/* レスポンシブ */
 @media (max-width: 768px) {
     .container {
         padding: 15px;
@@ -551,31 +305,12 @@ h1 {
         flex-direction: column;
     }
     
-    .bus-stop {
-        flex: 1 1 100%;
+    .global-info {
+        flex-direction: column;
     }
     
     h1 {
         font-size: 24px;
-    }
-    
-    .loading-content {
-        padding: 30px 40px;
-        margin: 20px;
-    }
-    
-    .loading-spinner {
-        width: 35px;
-        height: 35px;
-        border-width: 3px;
-    }
-    
-    .loading-text {
-        font-size: 16px;
-    }
-    
-    .loading-subtext {
-        font-size: 13px;
     }
 }
 
@@ -590,120 +325,44 @@ h1 {
     
     .info-bar {
         flex-direction: column;
-        gap: 15px;
-        padding: 20px;
+        gap: 10px;
         text-align: center;
-    }
-    
-    .update-info {
-        align-items: center;
-    }
-    
-    h1 {
-        font-size: 20px;
     }
     
     .refresh-btn {
         width: 100%;
-        padding: 14px 24px;
-        font-size: 15px;
     }
     
-    /* モバイル用タブ表示 */
     .mobile-tabs {
         display: flex;
-        gap: 6px;
-    }
-    
-    .bus-stops {
-        flex-direction: column;
-        gap: 0;
     }
     
     .bus-stop {
         display: none;
-        flex: 1 1 100%;
-        margin-bottom: 0;
     }
     
     .bus-stop.active {
         display: block;
-        animation: fadeInUp 0.3s ease-out;
-    }
-    
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .congestion-details {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 5px;
-    }
-    
-    .environmental-data {
-        justify-content: center;
-        gap: 15px;
     }
     
     .departure-time {
         flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-        padding: 20px;
-    }
-    
-    .time-section {
-        justify-content: center;
-        gap: 15px;
+        gap: 10px;
+        text-align: center;
     }
     
     .time-text {
-        font-size: 28px;
-        text-align: center;
-        min-width: auto;
-    }
-    
-    .remaining-section {
-        text-align: center;
+        font-size: 24px;
     }
     
     .remaining-text {
-        font-size: 18px;
-        padding: 12px 20px;
-        min-width: auto;
         width: 100%;
+        font-size: 16px;
+        padding: 10px;
     }
     
-    .bus-type-label {
-        font-size: 12px;
-        padding: 8px 16px;
-    }
-    
-    .loading-content {
-        padding: 25px 30px;
-        margin: 15px;
-    }
-    
-    .loading-spinner {
-        width: 30px;
-        height: 30px;
-        border-width: 3px;
-        margin-bottom: 15px;
-    }
-    
-    .loading-text {
-        font-size: 15px;
-    }
-    
-    .loading-subtext {
-        font-size: 12px;
+    .congestion-details {
+        flex-direction: column;
+        gap: 5px;
     }
 }
