@@ -5,7 +5,7 @@ const API_CONFIG = {
     
     // APIエンドポイント
     ENDPOINTS: {
-        BUS_STATUS: 'http://172.16.1.23:8000/api/latest/queue'
+        BUS_STATUS: 'http://172.16.1.88:8000/api/status'
     }
 };
 
