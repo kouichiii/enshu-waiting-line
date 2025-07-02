@@ -10,6 +10,7 @@ Node A  (HC-SR04 + PiCamera2 搭載 Raspberry Pi)
 import os, time, datetime, statistics, signal, sys, requests
 import RPi.GPIO as GPIO
 from picamera2 import Picamera2
+import cv2, datetime, os
 
 # ── 設定 ───────────────────────────────────────────────────
 TRIG, ECHO   = 15, 14         # HC-SR04 ピン
@@ -57,10 +58,15 @@ def get_distance():
     return statistics.median(one_distance() for _ in range(MEASURE_NUM))
 
 # ── カメラ撮影 ────────────────────────────────────────────
-def capture_image() -> str:
+def capture_image():
     ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     path = os.path.join(CAP_DIR, f"img_{ts}.jpg")
-    camera.capture_file(path)
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+    ret, frame = cap.read()
+    if ret:
+        cv2.imwrite(path, frame)
+    cap.release()
     return path
 
 # ── Node B から温湿度取得 ─────────────────────────────────
