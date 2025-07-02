@@ -11,14 +11,24 @@ def save_bus_data(db: Session, congestion_level: int, gender_ratio: str, receive
     db.add(entry)
     db.commit()
 
-def save_queue_data(db: Session, num_queue_people: int, gender_ratio: str,
-                    temperature: float, humidity: float, received_at: datetime):
+def save_queue_data(
+    db: Session,
+    num_queue_people: int,
+    gender_ratio: str,
+    temperature: float,
+    humidity: float,
+    received_at: datetime,
+    predicted_comfort: int,
+    predicted_congestion: int
+):
     entry = QueueData(
         num_queue_people=num_queue_people,
         gender_ratio=gender_ratio,
         temperature=temperature,
         humidity=humidity,
-        received_at=received_at
+        received_at=received_at,
+        predicted_comfort=predicted_comfort,
+        predicted_congestion=predicted_congestion
     )
     db.add(entry)
     db.commit()
