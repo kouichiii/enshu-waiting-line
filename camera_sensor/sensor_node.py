@@ -1,53 +1,33 @@
-import socket
-import time
-from datetime import datetime
+#!/usr/bin/env python3
+"""
+Node B  (Sense HAT 搭載 Raspberry Pi)
+温度・湿度（＋気圧）を /sensor で返すだけの超軽量 API
+"""
 
-# 通信設定
-CAMERA_IP = '192.168.0.100'  # カメラ端末のIPアドレス
-CAMERA_PORT = 9000           # カメラがトリガーを受け付けるポート
-SENSOR_HOST = '0.0.0.0'      # 自端末の待機アドレス
-SENSOR_PORT = 9100           # 自端末が画像を受信するポート
+from flask import Flask, jsonify
+from sense_hat import SenseHat
+import subprocess
 
-SAVE_DIR = "./received_images"
+app   = Flask(__name__)
+sense = SenseHat()
 
-def send_trigger_to_camera():
-    """カメラ端末にトリガーを送信する"""
-    with socket.socket() as sock:
-        sock.connect((CAMERA_IP, CAMERA_PORT))
-        sock.sendall(b'trigger')
-    print("[SENSOR-DEMO] Trigger sent to camera")
+# ── CPU 発熱による温度誤差を簡易補正 ──────────────────────────
+def _cpu_temp() -> float:
+    out = subprocess.check_output(["vcgencmd", "measure_temp"]).decode()
+    return float(out.replace("temp=", "").replace("'C\n", ""))
 
-def receive_image_from_camera():
-    """画像を受信してファイルに保存"""
-    with socket.socket() as server:
-        server.bind((SENSOR_HOST, SENSOR_PORT))
-        server.listen(1)
-        print(f"[SENSOR-DEMO] Listening on {SENSOR_HOST}:{SENSOR_PORT} for image...")
-        conn, addr = server.accept()
-        with conn:
-            print(f"[SENSOR-DEMO] Receiving image from {addr}")
-            data_len = int.from_bytes(conn.recv(8), 'big')
-            image_data = b''
-            while len(image_data) < data_len:
-                packet = conn.recv(4096)
-                if not packet:
-                    break
-                image_data += packet
+def get_env():
+    raw_h = sense.get_temperature_from_humidity()
+    raw_p = sense.get_temperature_from_pressure()
+    cpu   = _cpu_temp()
+    temp  = (raw_h + raw_p) / 2 - (cpu - raw_h) * 0.6   # 簡易補正
+    return round(temp, 1), round(sense.get_humidity(), 1)
 
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f"{SAVE_DIR}/image_{timestamp}.jpg"
-            with open(filename, 'wb') as f:
-                f.write(image_data)
-            print(f"[SENSOR-DEMO] Image saved: {filename}")
+@app.route("/sensor", methods=["GET"])
+def sensor():
+    temp, humi = get_env()
+    return jsonify({"temperature": temp, "humidity": humi})
 
-def main():
-    import os
-    os.makedirs(SAVE_DIR, exist_ok=True)
-    
-    # 1. トリガー送信
-    send_trigger_to_camera()
-    # 2. 画像受信
-    receive_image_from_camera()
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    # LAN 内どこからでも呼び出せるよう 0.0.0.0
+    app.run(host="0.0.0.0", port=5000, debug=False)
