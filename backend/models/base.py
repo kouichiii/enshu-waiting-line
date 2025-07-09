@@ -17,3 +17,5 @@ class QueueData(Base):
     temperature = Column(Float)
     humidity = Column(Float)
     received_at = Column(DateTime, default=datetime.now)
+    predicted_comfort = Column(Integer, nullable=True)
+    predicted_congestion = Column(Integer, nullable=True)

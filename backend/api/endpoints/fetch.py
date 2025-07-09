@@ -46,16 +46,6 @@ async def fetch_latest_data(db: Session = Depends(get_db)):
         return {"error": "データが不足しています"}
 
     # 男女比・温湿度の平均で推測（単純な例）
-    congestion_level = bus.congestion_level
-    num_queue_people = queue.num_queue_people
-    gender_ratio_bus = bus.gender_ratio
-    gender_ratio_queue = queue.gender_ratio
-    temperature = queue.temperature
-    humidity = queue.humidity
-
-    comfort, predicted_congestion = predict_congestion_and_comfort(
-        congestion_level, num_queue_people, gender_ratio_bus, gender_ratio_queue, temperature, humidity
-    )
 
     return {
         "bus": {
@@ -65,13 +55,13 @@ async def fetch_latest_data(db: Session = Depends(get_db)):
         },
         "queue": {
             "num_queue_people": queue.num_queue_people,
-            "temperature": temperature,
-            "humidity": humidity,
+            "temperature": queue.temperature,
+            "humidity": queue.humidity,
             "gender_ratio": queue.gender_ratio,
             "received_at": queue.received_at
         },
         "predicted": {
-            "comfortability": comfort,
-            "congestion_level": predicted_congestion
+            "comfortability": queue.predicted_comfort,
+            "congestion_level": queue.predicted_congestion
         }
     }

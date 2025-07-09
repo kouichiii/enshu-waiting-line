@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
-API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + api_key
+API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=" + api_key
 HEADERS = {
     "Content-Type": "application/json"
 }
@@ -92,7 +92,7 @@ def predict_congestion_and_comfort(
         f"・列に並んでいる男女比: {gender_ratio_queue}\n"
         f"・温度: {temperature}℃\n"
         f"・湿度: {humidity}%\n\n"
-        f"出力形式は次のようにしてください:\n"
+        f"出力形式は次のようにしてください。またそれ以外は出力しないでください。:\n"
         f"快適度: <数値>, 予測混雑度: <数値>"
     )
 

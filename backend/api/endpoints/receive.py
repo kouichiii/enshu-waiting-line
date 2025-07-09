@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from database.config import SessionLocal, engine
-from models.base import Base
+from models.base import Base, BusData
 from crud.sensor_data import save_bus_data, save_queue_data
-from services.image_analysis import analyze_image
+from services.image_analysis import analyze_image, predict_congestion_and_comfort
 
 router = APIRouter()
 
@@ -44,7 +44,31 @@ async def upload_data(
         num_queue_people, gender_ratio = analyze_image(image_bytes, device_id)
         if num_queue_people is None:
             return {"error": "Image analysis failed"}
-        save_queue_data(db, num_queue_people, gender_ratio, temperature, humidity, received_at)#sensor_data.pyで定義した保存関数
+        # 最新のバスデータを取得
+        bus_data = db.query(BusData).order_by(BusData.received_at.desc()).first()
+        congestion_level = bus_data.congestion_level if bus_data else 3
+        gender_ratio_bus = bus_data.gender_ratio if bus_data else "male:50,female:50"
+
+        # 快適度と混雑度を推定
+        predicted_comfort, predicted_congestion = predict_congestion_and_comfort(
+            congestion_level=congestion_level,
+            num_queue_people=num_queue_people,
+            gender_ratio_bus=gender_ratio_bus,
+            gender_ratio_queue=gender_ratio,
+            temperature=temperature,
+            humidity=humidity
+        )
+
+        save_queue_data(
+            db=db,
+            num_queue_people=num_queue_people,
+            gender_ratio=gender_ratio,
+            temperature=temperature,
+            humidity=humidity,
+            received_at=received_at,
+            predicted_comfort=predicted_comfort,
+            predicted_congestion=predicted_congestion
+        )
     else:
         return {"error": "Unknown device_id"}
 
