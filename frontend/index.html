@@ -449,7 +449,8 @@
             }
             
             // 5人単位で丸める
-            const rounded = Math.ceil(count / 5) * 5;
+            // const rounded = Math.ceil(count / 5) * 5;
+            const rounded = count; // いったん丸めずそのまま表示
             return `約${rounded}人`;
         }
 
