@@ -22,8 +22,8 @@ CAP_DIR = Path.home() / "capture"
 CAP_DIR.mkdir(parents=True, exist_ok=True)
 
 NODE_B_URL = "http://172.16.1.27:5000/sensor"         # 温湿度 API
-NODE_C_URL = "http://172.16.1.98:8000/api/upload"     # ★送信先
-DEVICE_ID  = "1"                                      # 固定 ID
+NODE_C_URL = "http://172.16.1.33:8000/api/upload"     # ★送信先
+DEVICE_ID  = "2"                                      # 固定 ID
 
 SEND_TEST = 1
 
