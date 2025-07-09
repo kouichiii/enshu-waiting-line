@@ -30,7 +30,7 @@ const BUS_SCHEDULE = {
             { hour: 11, minutes: [25] },
             { hour: 12, minutes: [15, 20, 40] },
             { hour: 15, minutes: [15, 20] },
-            { hour: 16, minutes: [4] },
+            { hour: 16, minutes: [5] },
             { hour: 17, minutes: [0, 5] },
             { hour: 18, minutes: [35, 40] }
         ],
