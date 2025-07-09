@@ -5,7 +5,7 @@ const API_CONFIG = {
     
     // APIエンドポイント
     ENDPOINTS: {
-        BUS_STATUS: 'http://172.16.1.88:8000/api/status'
+        BUS_STATUS: 'http://172.16.1.33:8000/api/status'
     }
 };
 
