@@ -25,6 +25,8 @@ NODE_B_URL = "http://172.16.1.27:5000/sensor"         # 温湿度 API
 NODE_C_URL = "http://172.16.1.98:8000/api/upload"     # ★送信先
 DEVICE_ID  = "1"                                      # 固定 ID
 
+SEND_TEST = 1
+
 # ── GPIO ────────────────────────────────────────────
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(TRIG, GPIO.OUT, initial=GPIO.LOW)
@@ -97,7 +99,11 @@ while True:
     print(f"距離: {dist:.1f} cm")
     if dist >= THRESHOLD_CM:
         print(" └ しきい値超過 → 撮影")
-        img = capture_image()
+        if SEND_TEST == 1:
+            img = CAP_DIR / "sample2.jpg"
+            print(f"★ テストモード: sample2.jpg を送信します → {img}")
+        else:
+            img = capture_image()
 
         temp, humi = fetch_temp_humi()
         print(f"   温度={temp} ℃, 湿度={humi}%")
