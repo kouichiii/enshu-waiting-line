@@ -18,7 +18,7 @@ THRESHOLD_CM = 30
 MEASURE_NUM  = 3
 SOUND_SPEED  = 34300                  # cm/s
 
-CAP_DIR = Path.home() / "capture"
+CAP_DIR = Path("/home/y-hashimoto/Documents/test/enshu-waiting-line/camera/sensor/capture")
 CAP_DIR.mkdir(parents=True, exist_ok=True)
 
 NODE_B_URL = "http://172.16.1.27:5000/sensor"         # 温湿度 API
