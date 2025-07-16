@@ -5,7 +5,7 @@ const path = require('path');
 const url = require('url');
 
 // バックエンドAPIのURL（適宜書き換えてください）
-const BACKEND_API = 'http://192.168.100.10:5000';
+const BACKEND_API = 'http://192.168.100.26:8000/api/status';
 
 const proxy = httpProxy.createProxyServer({
   target: BACKEND_API,
