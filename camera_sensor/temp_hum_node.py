@@ -9,7 +9,7 @@ import subprocess, requests, datetime
 app = Flask(__name__)
 sense = SenseHat()
 
-NODE_C_URL = "http://192.168.0.22:6000/measure"   # ★Node camera の IP （撮影用カメラ）
+NODE_C_URL = "http://172.16.1.96:6000/measure"   # ★Node camera の IP （撮影用カメラ）
 
 def cpu_temp():
     out = subprocess.check_output(["vcgencmd","measure_temp"]).decode()
