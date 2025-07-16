@@ -35,8 +35,8 @@ def take_photo() -> Path:
         print("⚠ 撮影失敗")
     return path
 
-def select_photo() -> Path:
-    return CAP_DIR / f"sample{SELECT_PHOTO_INBUS}.jpg"
+# def select_photo() -> Path:
+#     return CAP_DIR / f"sample{SELECT_PHOTO_INBUS}.jpg"
 
 
 def send_backend(img: Path, temp, hum):
@@ -53,19 +53,19 @@ def send_backend(img: Path, temp, hum):
     except Exception as e:
         print("backend 送信例外:", e)
 
-def send_inbus_backend(img: Path, temp, hum):
-    try:
-        with open(img, "rb") as f:
-            files = {"image": f}
-            data  = {
-                "device_id":  DEVICE_ID, # 工学部前
-                "temperature": f"{temp}",
-                "humidity":   f"{hum}"
-            }
-            r = requests.post(BACKEND_URL, files=files, data=data, timeout=5)
-        print("→ backend:", r.status_code, r.text[:80])
-    except Exception as e:
-        print("backend 送信例外:", e)
+# def send_inbus_backend(img: Path, temp, hum):
+#     try:
+#         with open(img, "rb") as f:
+#             files = {"image": f}
+#             data  = {
+#                 "device_id":  DEVICE_ID, # 工学部前
+#                 "temperature": f"{temp}",
+#                 "humidity":   f"{hum}"
+#             }
+#             r = requests.post(BACKEND_URL, files=files, data=data, timeout=5)
+#         print("→ backend:", r.status_code, r.text[:80])
+#     except Exception as e:
+#         print("backend 送信例外:", e)
 
 # ── Flask サーバ ────────────────────────────────────
 app = Flask(__name__)
@@ -75,9 +75,9 @@ def measure():
     js = request.get_json(force=True)
     temp, hum = js.get("temperature"), js.get("humidity")
     print(f"[MEASURE] T={temp}℃ H={hum}%  → 撮影")
-    img_inbus = select_photo()
+    # img_inbus = select_photo()
     img = take_photo()
-    send_inbus_backend(img_inbus, temp, hum) # 工学部前のバス内の写真を送る　事前に準備したもの
+    # send_inbus_backend(img_inbus, temp, hum) # 工学部前のバス内の写真を送る　事前に準備したもの
     send_backend(img, temp, hum) # 人科前の待機列の写真を送る　並んでもらって写真を撮ったもの
     return jsonify({"status": "captured"})
 
