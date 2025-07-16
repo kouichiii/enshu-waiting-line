@@ -1,11 +1,11 @@
 // API設定
 const API_CONFIG = {
-    // ベースURL（本番環境では適切なURLに変更してください）
-    BASE_URL: '',
-    
-    // APIエンドポイント
+    // フロントエンドサーバーの中継URLを指定（例: 本番では https://yourdomain.com/api/... になる）
+    BASE_URL: '/api', // プロキシを前提に
+
+    // APIエンドポイント（中継を前提に相対パスで）
     ENDPOINTS: {
-        BUS_STATUS: 'http://192.168.100.26:8000/api/status'
+        BUS_STATUS: '/api/status' // ここをプロキシ用のルートに変更
     }
 };
 
