@@ -12,9 +12,11 @@ from flask import Flask, request, jsonify
 CAP_DIR = Path("/home/y-hashimoto/Documents/test/enshu-waiting-line/camera_sensor/capture") # 写真の保存先
 CAP_DIR.mkdir(parents=True, exist_ok=True)
 
-BACKEND_URL = "http://172.16.1.33:8000/api/upload"   # 送信先
+# BACKEND_URL = "http://172.16.1.33:8000/api/upload"   # 送信先
+BACKEND_URL = None   # test
 DEVICE_ID   = "2"
 SEND_TEST   = 0                                      # 1 なら sample2.jpg を送信
+SELECT_PHOTO_INBUS = "0"
 
 # ── カメラ初期化 ─────────────────────────────────────
 cap = cv2.VideoCapture(0, cv2.CAP_V4L)
@@ -33,12 +35,30 @@ def take_photo() -> Path:
         print("⚠ 撮影失敗")
     return path
 
+def select_photo() -> Path:
+    return CAP_DIR / f"sample{SELECT_PHOTO_INBUS}.jpg"
+
+
 def send_backend(img: Path, temp, hum):
     try:
         with open(img, "rb") as f:
             files = {"image": f}
             data  = {
-                "device_id":  DEVICE_ID,
+                "device_id":  DEVICE_ID, # 人科前
+                "temperature": f"{temp}",
+                "humidity":   f"{hum}"
+            }
+            r = requests.post(BACKEND_URL, files=files, data=data, timeout=5)
+        print("→ backend:", r.status_code, r.text[:80])
+    except Exception as e:
+        print("backend 送信例外:", e)
+
+def send_inbus_backend(img: Path, temp, hum):
+    try:
+        with open(img, "rb") as f:
+            files = {"image": f}
+            data  = {
+                "device_id":  DEVICE_ID, # 工学部前
                 "temperature": f"{temp}",
                 "humidity":   f"{hum}"
             }
@@ -55,8 +75,10 @@ def measure():
     js = request.get_json(force=True)
     temp, hum = js.get("temperature"), js.get("humidity")
     print(f"[MEASURE] T={temp}℃ H={hum}%  → 撮影")
+    img_inbus = select_photo()
     img = take_photo()
-    send_backend(img, temp, hum)
+    send_inbus_backend(img_inbus, temp, hum) # 工学部前のバス内の写真を送る　事前に準備したもの
+    send_backend(img, temp, hum) # 人科前の待機列の写真を送る　並んでもらって写真を撮ったもの
     return jsonify({"status": "captured"})
 
 def cleanup(*_): cap.release(); sys.exit(0)
