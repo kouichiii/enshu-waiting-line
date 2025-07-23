@@ -8,7 +8,7 @@ TRIG, ECHO = 15, 14
 THRESHOLD_CM = 30
 MEASURE_N = 3
 SPD = 34300                # cm/s
-NODE_S_URL = "http://172.16.1.81:5000/trigger"  # ★Node temp-hum の IP （温湿度センサー）
+NODE_S_URL = "http://192.168.137.125:5000/trigger"  # ★Node temp-hum の IP （温湿度センサー）
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(TRIG, GPIO.OUT, initial=GPIO.LOW)
