@@ -2,6 +2,7 @@
 #"uvicorn main:app --reload"でサーバを起動
 #"http://localhost:8000/api/ping" にアクセスする
 
+import os
 from fastapi import APIRouter, Form, File, UploadFile, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -23,6 +24,18 @@ def get_db():
     finally:
         db.close()
 
+# === 追加関数: ローカル画像保存 ===
+def save_image_to_local(image_bytes: bytes, device_id: str, received_at: datetime):
+    save_dir = "saved_images"
+    os.makedirs(save_dir, exist_ok=True)  # ディレクトリがなければ作成
+    timestamp = received_at.strftime("%Y%m%d_%H%M%S")
+    filename = f"{device_id}_{timestamp}.jpg"
+    path = os.path.join(save_dir, filename)
+
+    with open(path, "wb") as f:
+        f.write(image_bytes)
+    print(f"✅ 画像を保存しました: {path}")
+
 @router.post("/upload")
 async def upload_data(
     device_id: str = Form(...),
@@ -33,6 +46,8 @@ async def upload_data(
 ):
     received_at = datetime.now()
     image_bytes = await image.read()
+
+    save_image_to_local(image_bytes, device_id, received_at)
 
     if device_id == "1":#工学部用のセンサがid=1
         # 仮の混雑度・男女比（ステップ4で Gemini API に置換）
