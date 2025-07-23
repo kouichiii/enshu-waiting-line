@@ -3,10 +3,14 @@
 Node C (Camera)  
   • /measure で温湿度 JSON を受け取り撮影  
   • 撮影画像＋温湿度をバックエンドへ multipart POST
+  python3 camera_node.py i # samplei（数字）.jpg
 """
 import datetime, cv2, requests, signal, sys
 from pathlib import Path
 from flask import Flask, request, jsonify
+import sys
+
+args = sys.argv
 
 # ★ 既存パス・ID をそのまま利用
 CAP_DIR = Path("/home/y-hashimoto/Documents/test/enshu-waiting-line/camera_sensor/capture") # 写真の保存先
@@ -17,7 +21,8 @@ BACKEND_URL = "http://192.168.137.26:8000/api/upload"   # 送信先
 DEVICE_ID_jinka   = "2"
 DEVICE_ID_kougakubu   = "2"
 SEND_TEST   = 1                                      # 1 なら sample2.jpg を送信　工学部前
-SELECT_PHOTO_INBUS = "1"                             # sample .jpg を送信　人科前　
+SELECT_PHOTO_INBUS = args[0]                            # sample .jpg を送信　人科前　
+# SELECT_PHOTO_INBUS = "1"                             # sample .jpg を送信　人科前　
 
 # ── カメラ初期化 ─────────────────────────────────────
 cap = cv2.VideoCapture(0, cv2.CAP_V4L)
