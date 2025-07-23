@@ -63,7 +63,7 @@ const server = http.createServer((req, res) => {
 
 // サーバー起動
 const PORT = 8080;
-const HOST = '192.168.11.100'; // ここを適宜変更
+const HOST = '0.0.0.0'; // ここを適宜変更
 server.listen(PORT, HOST, () => {
   console.log(`Proxy server listening on http://192.168.11.100:${PORT}`);
 });
