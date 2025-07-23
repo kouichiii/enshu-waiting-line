@@ -16,8 +16,8 @@ BACKEND_URL = "http://192.168.137.26:8000/api/upload"   # 送信先
 # BACKEND_URL = None   # test
 DEVICE_ID_jinka   = "2"
 DEVICE_ID_kougakubu   = "2"
-SEND_TEST   = 0                                      # 1 なら sample2.jpg を送信
-SELECT_PHOTO_INBUS = "1"
+SEND_TEST   = 1                                      # 1 なら sample2.jpg を送信　工学部前
+SELECT_PHOTO_INBUS = "1"                             # sample .jpg を送信　人科前　
 
 # ── カメラ初期化 ─────────────────────────────────────
 cap = cv2.VideoCapture(0, cv2.CAP_V4L)
