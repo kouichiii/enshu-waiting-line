@@ -17,7 +17,7 @@ BACKEND_URL = "http://192.168.137.26:8000/api/upload"   # 送信先
 DEVICE_ID_jinka   = "2"
 DEVICE_ID_kougakubu   = "2"
 SEND_TEST   = 0                                      # 1 なら sample2.jpg を送信
-SELECT_PHOTO_INBUS = "0"
+SELECT_PHOTO_INBUS = "1"
 
 # ── カメラ初期化 ─────────────────────────────────────
 cap = cv2.VideoCapture(0, cv2.CAP_V4L)
@@ -37,7 +37,7 @@ def take_photo() -> Path:
     return path
 
 def select_photo() -> Path:
-    return CAP_DIR / f"sample{SELECT_PHOTO_INBUS}1.jpg"
+    return CAP_DIR / f"sample{SELECT_PHOTO_INBUS}.jpg"
 
 
 def send_backend(img: Path, temp, hum):# 人科前
