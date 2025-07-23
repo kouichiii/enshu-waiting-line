@@ -2,12 +2,12 @@
 
 import requests
 
-url = "http://172.16.1.33:8000/api/upload" #URLは確認必須
+url = "http://192.168.137.26:8000/api/upload" #URLは確認必須
 files = {
-    "image": open("sample2.jpg", "rb") #sample用の画像
+    "image": open("sample1.jpg", "rb") #sample用の画像
 }
 data = {
-    "device_id": "2",
+    "device_id": "1",
     "temperature": "25.4",
     "humidity": "65.0"
 }
