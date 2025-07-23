@@ -64,7 +64,7 @@ const server = http.createServer((req, res) => {
 // サーバー起動
 const PORT = 8080;
 server.listen(PORT, () => {
-  console.log(`Proxy server listening on http://localhost:${PORT}`);
+  console.log(`Proxy server listening on http://192.168.11.100:${PORT}`);
 });
 
 // エラーハンドリング
