@@ -5,7 +5,7 @@ const API_CONFIG = {
 
     // APIエンドポイント（中継を前提に相対パスで）
     ENDPOINTS: {
-        BUS_STATUS: '/api/status' // Updated to match proxy settings
+        BUS_STATUS: '/status' // Updated to match proxy settings
     }
 };
 
