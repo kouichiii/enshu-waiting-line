@@ -5,7 +5,7 @@ const API_CONFIG = {
 
     // APIエンドポイント（中継を前提に相対パスで）
     ENDPOINTS: {
-        BUS_STATUS: '/api/status' // ここをプロキシ用のルートに変更
+        BUS_STATUS: '/status' // Updated to match proxy settings
     }
 };
 
