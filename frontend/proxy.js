@@ -5,7 +5,7 @@ const path = require('path');
 const url = require('url');
 
 // バックエンドAPIのURL（適宜書き換えてください）
-const BACKEND_API = 'http://192.168.100.26:8000/api/status';
+const BACKEND_API = 'http://192.168.100.26:8000';
 
 const proxy = httpProxy.createProxyServer({
   target: BACKEND_API,
@@ -65,4 +65,15 @@ const server = http.createServer((req, res) => {
 const PORT = 8080;
 server.listen(PORT, () => {
   console.log(`Proxy server listening on http://localhost:${PORT}`);
+});
+
+// エラーハンドリング
+server.on('error', (err) => {
+  console.error('Server error:', err);
+});
+
+proxy.on('error', (err, req, res) => {
+  console.error('Proxy error:', err);
+  res.writeHead(502);
+  res.end('Bad Gateway');
 });
