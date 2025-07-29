@@ -20,8 +20,8 @@ BACKEND_URL = "http://192.168.137.26:8000/api/upload"   # 送信先
 # BACKEND_URL = None   # test
 DEVICE_ID_jinka   = "2"
 DEVICE_ID_kougakubu   = "1"
-SEND_TEST   = 0                                      # 1 なら sample2.jpg を送信　工学部前
-SELECT_PHOTO_INBUS = args[1]                            # sample .jpg を送信　人科前　
+SEND_TEST   = 0                                      # 1 なら sample.jpg を送信　工学部前
+SELECT_PHOTO_INBUS = args[1]                            # sample + args[1] + .jpg を送信　工学部前　
 # SELECT_PHOTO_INBUS = "1"                             # sample .jpg を送信　人科前　
 
 # ── カメラ初期化 ─────────────────────────────────────
@@ -30,7 +30,7 @@ cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
 
 def take_photo() -> Path:
     if SEND_TEST:
-        return CAP_DIR / "sample2.jpg"
+        return CAP_DIR / "sample.jpg"
 
     ts   = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     path = CAP_DIR / f"img_{ts}.jpg"
